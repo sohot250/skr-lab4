@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lab4/book.dart';
+import 'book_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +30,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final controller = TextEditingController();
+  List<Book> books = allBooks;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +46,52 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: const Icon(Icons.search))
         ],
       ),
-      body: Center(
-        child: Container(),
-      ),
+      body: Column(children: [
+        Container(
+          margin: const EdgeInsets.all(16),
+          child: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                hintText: 'Book Title',
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(color: Colors.blue))),
+            onChanged: searchBook,
+          ),
+        ),
+        Expanded(
+            child: ListView.builder(
+                itemCount: books.length,
+                itemBuilder: ((context, index) {
+                  final book = books[index];
+                  return ListTile(
+                      contentPadding: const EdgeInsets.all(16),
+                      leading: Image.network(
+                        book.urlImage,
+                        fit: BoxFit.cover,
+                        width: 50,
+                        height: 50,
+                      ),
+                      title: Text(book.title),
+                      onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BookPage(book: book)),
+                          ));
+                })))
+      ]),
     );
+  }
+
+  void searchBook(String query) {
+    final suggestions = allBooks.where((book) {
+      final bookTitle = book.title.toLowerCase();
+      final input = query.toLowerCase();
+
+      return bookTitle.contains(input);
+    }).toList();
+    setState(() => books = suggestions);
   }
 }
 
